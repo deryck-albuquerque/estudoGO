@@ -1,0 +1,44 @@
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+
+	"github.com/deryck-albuquerque/estudoGO/internal/models"
+)
+
+func main() {
+
+	req := models.CreateUserRequest{
+		Name:  "Deryck",
+		Email: "deryck.henrique22@gmail.com",
+	}
+
+	b, err := json.Marshal(req)
+	if err != nil {
+		panic(err)
+	}
+
+	resp, err := http.Post("http://localhost:8080/users", "application/json", bytes.NewReader(b))
+	if err != nil {
+		panic(err)
+	}
+
+	if resp.StatusCode != http.StatusCreated {
+		var responseAPI models.ErrorResponse
+		if err := json.NewDecoder(resp.Body).Decode(&responseAPI); err != nil {
+			panic(err)
+		}
+
+		panic(responseAPI.Reason)
+	}
+
+	var responseAPI models.CreateUserResponse
+	if err := json.NewDecoder(resp.Body).Decode(&responseAPI); err != nil {
+		panic(err)
+	}
+
+	fmt.Println("New user created", responseAPI)
+}
